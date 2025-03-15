@@ -31,17 +31,16 @@
             to="/dashboard"
           ></v-list-item>
           <v-list-item
-            prepend-icon="mdi-cart"
-            title="orders"
-            value="orders"
-            to="/orders"
-          ></v-list-item>
-
-          <v-list-item
             prepend-icon="mdi-theme-light-dark"
             title="dark mode"
             value="dark mode"
             @click="toggleTheme"
+          ></v-list-item>
+          <v-list-item
+            prepend-icon="mdi-translate"
+            title="Language"
+            value="Language"
+            @click="toggleLanguage"
           ></v-list-item>
           <v-list-item
             prepend-icon="mdi-logout"
@@ -55,28 +54,41 @@
     </v-layout>
   </v-card>
 </template>
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
-import { useStore } from "vuex";
-import { useTheme } from "vuetify";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "../../store/authStore";
+import { useTheme } from "vuetify";
+import { useDarkMode } from "../../composables/useDarkMode";
+import LanguageSwitcher from "./LanguageSwitcher.vue";
+import { useI18n } from "vue-i18n";
 
+const { locale } = useI18n();
+const currentLang = ref(locale.value);
+
+const toggleLanguage = () => {
+  currentLang.value = currentLang.value === "en" ? "ar" : "en";
+  locale.value = currentLang.value;
+  localStorage.setItem("lang", currentLang.value);
+};
+const { isDarkMode, toggleDarkMode } = useDarkMode();
 const theme = useTheme();
 
-const drawer = ref(true);
-const rail = ref(true);
+const drawer = ref<boolean>(true);
+const rail = ref<boolean>(true);
 
 const router = useRouter();
-const store = useStore();
+const authStore = useAuthStore();
 
-function toggleTheme() {
-  store.dispatch("theme/toggleTheme");
-  theme.global.name.value = theme.global.current.value.dark ? "light" : "dark";
-}
+theme.global.name.value = isDarkMode.value ? "dark" : "light";
+
+const toggleTheme = () => {
+  toggleDarkMode();
+  theme.global.name.value = isDarkMode.value ? "dark" : "light"; // ✅ Apply theme instantly
+};
 
 const handleLogOut = async () => {
-  store.dispatch("auth/logout").then(() => {
-    router.push("/login");
-  });
+  await authStore.logout();
+  router.push("/login");
 };
 </script>
