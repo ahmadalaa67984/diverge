@@ -46,7 +46,7 @@ const userStore = useUserStore();
 const users = computed(() => userStore.users);
 const loading = computed(() => userStore.loading);
 const headers = computed(() =>
-  RolesGroup.ADMINISTRATION.includes(props.userRole as Roles)
+  RolesGroup.MANAGEMENT.includes(props.userRole as Roles)
     ? usersTableHeadersAdmin
     : usersTableHeadersViewer
 );
